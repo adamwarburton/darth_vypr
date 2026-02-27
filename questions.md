@@ -4,48 +4,7 @@
 
 You are building a proof-of-concept (POC) web application for an FMCG consumer insights platform inspired by Vypr. The platform lets product developers, marketers, and category managers at food, drink, and consumer goods companies create rapid consumer research surveys grounded in behavioral science.
 
-This POC should demonstrate a clean, professional survey builder where users can create projects containing one or more behaviorally-grounded question types. It is a frontend-focused demo — no backend, no database, no authentication. All state lives in the browser (React state or context). The goal is to show the UX flow and question configuration experience, not to collect real responses.
-
----
-
-## Tech Stack
-
-- **React 18+** with TypeScript
-- **Tailwind CSS** for styling
-- **Lucide React** for icons
-- **No external component libraries** — build all UI components from scratch for full control
-- **Vite** as the build tool
-- **React Router** for navigation between pages
-
----
-
-## Application Structure
-
-The app has four main areas:
-
-1. **Dashboard** — lists existing projects with status indicators
-2. **New Project Flow** — guides the user through project creation
-3. **Question Builder** — configures individual questions with type-specific parameters
-4. **Survey Preview** — shows a read-only preview of the configured survey as a respondent would see it
-
----
-
-## Page 1: Dashboard
-
-Route: `/`
-
-A clean landing page showing:
-
-- **Header** with app name "InsightBuilder" and a tagline: "Behavioral science-led consumer research"
-- **"New Project" button** (primary CTA, prominent, top-right area)
-- **Project list** showing 2–3 pre-seeded example projects as cards:
-  - "Oat Milk Packaging Test" — Status: Draft, 3 questions, created 2 days ago
-  - "Premium Snack Bar Pricing" — Status: Complete, 1 question, created 1 week ago
-  - "Plant-Based Range Claims" — Status: Draft, 5 questions, created 3 days ago
-- Each project card shows: name, question count, status badge (Draft/Complete), creation date, and a "View" button
-
-Clicking "New Project" navigates to the project creation flow.
-
+This POC should demonstrate a clean, professional survey builder where users can create projects containing one or more behaviorally-grounded question types.
 ---
 
 ## Page 2: New Project Flow
@@ -595,17 +554,6 @@ src/
 
 10. **Question type definitions data file:** Create a `questionTypeDefinitions.ts` that contains the metadata for all 10 types (name, icon, description, bestFor, guidanceText) so the Question Type Picker can render directly from this data without hardcoding in JSX.
 
----
+# Send Survey
 
-## What NOT to Build
-
-- No authentication or user accounts
-- No backend API or database
-- No real survey distribution or response collection
-- No analytics or reporting dashboards
-- No payment or credit system
-- No panel management
-- No collaboration features
-- No export functionality
-
-This is purely a frontend POC demonstrating the survey creation UX flow and the 10 behaviorally-grounded question types with their configuration interfaces.
+The flow should end with the user having an option to send the survey to respondents. This should generate a URL where the survey can be compeleted by users (no edit options etc.) and responses should be collated in the backend, using the Supabase setup we've created.
