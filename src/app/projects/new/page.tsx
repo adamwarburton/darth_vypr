@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ResizablePanel } from "@/components/survey-builder/resizable-panel";
 import { QuestionList } from "@/components/survey-builder/question-list";
 import { QuestionEditor } from "@/components/survey-builder/question-editor";
+import { AiSurveyDesigner } from "@/components/survey-builder/ai-survey-designer";
 import type { SurveyQuestion } from "@/components/survey-builder/question-list";
 import {
   ArrowLeft,
@@ -92,6 +93,19 @@ export default function NewProjectPage() {
     []
   );
 
+  const handleApplyAiSurvey = useCallback(
+    (aiQuestions: SurveyQuestion[], title?: string) => {
+      setQuestions(aiQuestions);
+      if (title) {
+        setProjectTitle(title);
+      }
+      if (aiQuestions.length > 0) {
+        setSelectedId(aiQuestions[0].id);
+      }
+    },
+    []
+  );
+
   return (
     <div className="flex h-screen flex-col bg-background">
       {/* Compact header */}
@@ -163,18 +177,26 @@ export default function NewProjectPage() {
           minLeftPercent={25}
           maxLeftPercent={60}
           left={
-            <div className="h-full border-r border-white/[0.04] bg-[#0E1229]">
-              <QuestionList
-                questions={questions}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-                onAdd={handleAdd}
-                onDelete={handleDelete}
-                showTypeSelector={showTypeSelector}
-                onToggleTypeSelector={() =>
-                  setShowTypeSelector((prev) => !prev)
-                }
-              />
+            <div className="flex h-full flex-col border-r border-white/[0.04] bg-[#0E1229]">
+              <div className="shrink-0 border-b border-white/[0.04] p-3">
+                <AiSurveyDesigner
+                  onApplySurvey={handleApplyAiSurvey}
+                  projectTitle={projectTitle}
+                />
+              </div>
+              <div className="min-h-0 flex-1">
+                <QuestionList
+                  questions={questions}
+                  selectedId={selectedId}
+                  onSelect={setSelectedId}
+                  onAdd={handleAdd}
+                  onDelete={handleDelete}
+                  showTypeSelector={showTypeSelector}
+                  onToggleTypeSelector={() =>
+                    setShowTypeSelector((prev) => !prev)
+                  }
+                />
+              </div>
             </div>
           }
           right={
