@@ -111,10 +111,11 @@ export default function DashboardPage() {
     ),
   };
 
-  const allProjects: ProjectWithStats[] =
-    projects.length > 0
-      ? projects
-      : [demoProject];
+  // Always include the demo project; merge with any DB projects, deduplicating by ID
+  const dbProjects: ProjectWithStats[] = projects.filter(
+    (p) => p.id !== demoProject.id
+  );
+  const allProjects: ProjectWithStats[] = [demoProject, ...dbProjects];
 
   return (
     <div className="min-h-screen bg-background">
@@ -147,10 +148,13 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {allProjects.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+          {loading &&
+            [1, 2].map((i) => (
+              <Card key={`skeleton-${i}`} className="animate-pulse">
                 <CardHeader>
                   <div className="h-5 bg-muted rounded w-3/4" />
                 </CardHeader>
@@ -160,14 +164,7 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {allProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-        )}
+        </div>
       </main>
     </div>
   );
