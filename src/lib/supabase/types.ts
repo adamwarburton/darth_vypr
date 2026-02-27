@@ -19,6 +19,7 @@ export interface Database {
           id: string;
           title: string;
           description: string | null;
+          category: string | null;
           status: string;
           published_at: string | null;
           closed_at: string | null;
@@ -29,6 +30,7 @@ export interface Database {
           id?: string;
           title: string;
           description?: string | null;
+          category?: string | null;
           status?: string;
           published_at?: string | null;
           closed_at?: string | null;
@@ -39,6 +41,7 @@ export interface Database {
           id?: string;
           title?: string;
           description?: string | null;
+          category?: string | null;
           status?: string;
           published_at?: string | null;
           closed_at?: string | null;

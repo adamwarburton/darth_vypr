@@ -1,6 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { ResultsPageClient } from "@/components/results/ResultsPageClient";
+import { createServerClient } from "@/lib/supabase/server";
+import { getDemoData } from "@/lib/seed-demo-data";
+import type { Project, Question, Response, Answer, AiAnalysis } from "@/types";
+import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ResultsOverview } from "@/components/results/results-overview";
 import { QuestionResults } from "@/components/results/question-results";
@@ -23,6 +28,68 @@ export default async function ProjectResultsPage({
   params,
 }: ProjectResultsPageProps) {
   const { projectId } = await params;
+
+  // Try to load from Supabase first; fall back to demo data
+  let project: Project | null = null;
+  let questions: Question[] = [];
+  let responses: Response[] = [];
+  let answers: Answer[] = [];
+  let analyses: AiAnalysis[] = [];
+
+  try {
+    const supabase = createServerClient();
+
+    const { data: projectData } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("id", projectId)
+      .single();
+
+    if (projectData) {
+      project = projectData as unknown as Project;
+
+      const [questionsResult, responsesResult, answersResult, analysesResult] =
+        await Promise.all([
+          supabase
+            .from("questions")
+            .select("*")
+            .eq("project_id", projectId)
+            .order("order_index"),
+          supabase
+            .from("responses")
+            .select("*")
+            .eq("project_id", projectId)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("answers")
+            .select("*, responses!inner(project_id)")
+            .eq("responses.project_id", projectId),
+          supabase
+            .from("ai_analyses")
+            .select("*")
+            .eq("project_id", projectId)
+            .order("created_at", { ascending: false }),
+        ]);
+
+      questions = (questionsResult.data as unknown as Question[]) || [];
+      responses = (responsesResult.data as unknown as Response[]) || [];
+      answers = (answersResult.data as unknown as Answer[]) || [];
+      analyses = (analysesResult.data as unknown as AiAnalysis[]) || [];
+    }
+  } catch {
+    // Supabase not available — will use demo data
+  }
+
+  // Fall back to demo data if project not found in DB
+  if (!project) {
+    const demo = getDemoData();
+    // Use demo data for the demo project ID or any unknown projectId
+    project = demo.project;
+    questions = demo.questions;
+    responses = demo.responses;
+    answers = demo.answers;
+    analyses = [];
+  }
 
   return (
     <div className="min-h-screen bg-background">
