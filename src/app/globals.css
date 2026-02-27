@@ -40,9 +40,14 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --color-vypr-navy: #0B0F25;
+  --color-vypr-navy-light: #141933;
+  --color-vypr-navy-mid: #1C2240;
   --color-vypr-teal: #00D6C6;
+  --color-vypr-teal-dim: #00A89B;
   --color-vypr-grey-light: #F6F8FA;
   --color-vypr-grey-slate: #6C7280;
+  --color-vypr-surface: #1C2240;
+  --color-vypr-surface-raised: #242B4A;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -52,80 +57,55 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* Vypr Brand Colors as CSS variables */
 :root {
   --vypr-navy: #0B0F25;
+  --vypr-navy-light: #141933;
+  --vypr-navy-mid: #1C2240;
   --vypr-teal: #00D6C6;
+  --vypr-teal-dim: #00A89B;
   --vypr-white: #FFFFFF;
   --vypr-grey-light: #F6F8FA;
   --vypr-grey-slate: #6C7280;
+  --vypr-surface: #1C2240;
+  --vypr-surface-raised: #242B4A;
 
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.155 0.03 265);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.155 0.03 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.155 0.03 265);
-  --primary: oklch(0.78 0.15 185);
-  --primary-foreground: oklch(0.155 0.03 265);
-  --secondary: oklch(0.975 0.005 240);
-  --secondary-foreground: oklch(0.155 0.03 265);
-  --muted: oklch(0.975 0.005 240);
-  --muted-foreground: oklch(0.555 0.015 260);
-  --accent: oklch(0.975 0.005 240);
-  --accent-foreground: oklch(0.155 0.03 265);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0.01 240);
-  --input: oklch(0.922 0.01 240);
-  --ring: oklch(0.78 0.15 185);
-  --chart-1: oklch(0.78 0.15 185);
-  --chart-2: oklch(0.646 0.222 41.116);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.975 0.005 240);
-  --sidebar-foreground: oklch(0.155 0.03 265);
-  --sidebar-primary: oklch(0.78 0.15 185);
-  --sidebar-primary-foreground: oklch(0.155 0.03 265);
-  --sidebar-accent: oklch(0.975 0.005 240);
-  --sidebar-accent-foreground: oklch(0.155 0.03 265);
-  --sidebar-border: oklch(0.922 0.01 240);
-  --sidebar-ring: oklch(0.78 0.15 185);
-}
 
-.dark {
-  --background: oklch(0.155 0.03 265);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.19 0.025 265);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.19 0.025 265);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.78 0.15 185);
-  --primary-foreground: oklch(0.155 0.03 265);
-  --secondary: oklch(0.22 0.025 265);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.22 0.025 265);
-  --muted-foreground: oklch(0.65 0.01 260);
-  --accent: oklch(0.22 0.025 265);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.78 0.15 185);
-  --chart-1: oklch(0.78 0.15 185);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.19 0.025 265);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.78 0.15 185);
-  --sidebar-primary-foreground: oklch(0.155 0.03 265);
-  --sidebar-accent: oklch(0.22 0.025 265);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.78 0.15 185);
+  /* Enterprise dark navy palette */
+  --background: #0B0F25;
+  --foreground: #F0F2F5;
+  --card: #141933;
+  --card-foreground: #F0F2F5;
+  --popover: #1C2240;
+  --popover-foreground: #F0F2F5;
+  --primary: #00D6C6;
+  --primary-foreground: #0B0F25;
+  --secondary: #1C2240;
+  --secondary-foreground: #D1D5DB;
+  --muted: #1C2240;
+  --muted-foreground: #8B92A5;
+  --accent: #242B4A;
+  --accent-foreground: #F0F2F5;
+  --destructive: #EF4444;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #00D6C6;
+
+  /* Infographic chart palette */
+  --chart-1: #00D6C6;
+  --chart-2: #6366F1;
+  --chart-3: #F59E0B;
+  --chart-4: #EC4899;
+  --chart-5: #8B5CF6;
+
+  --sidebar: #0B0F25;
+  --sidebar-foreground: #D1D5DB;
+  --sidebar-primary: #00D6C6;
+  --sidebar-primary-foreground: #0B0F25;
+  --sidebar-accent: #1C2240;
+  --sidebar-accent-foreground: #F0F2F5;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #00D6C6;
 }
 
 @layer base {
@@ -133,9 +113,44 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    line-height: 1.5;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer utilities {
+  .vypr-glow {
+    box-shadow: 0 0 20px rgba(0, 214, 198, 0.15), 0 0 40px rgba(0, 214, 198, 0.05);
+  }
+  .vypr-glow-sm {
+    box-shadow: 0 0 10px rgba(0, 214, 198, 0.1);
+  }
+  .vypr-card-gradient {
+    background: linear-gradient(145deg, #141933 0%, #1C2240 100%);
+  }
+  .vypr-surface-gradient {
+    background: linear-gradient(180deg, #141933 0%, #0B0F25 100%);
+  }
+  .vypr-teal-gradient {
+    background: linear-gradient(135deg, #00D6C6 0%, #00A89B 100%);
+  }
+  .vypr-stat-gradient {
+    background: linear-gradient(135deg, rgba(0, 214, 198, 0.08) 0%, rgba(99, 102, 241, 0.06) 100%);
+  }
+  .vypr-text-gradient {
+    background: linear-gradient(135deg, #00D6C6, #6366F1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .vypr-border-glow {
+    border: 1px solid rgba(0, 214, 198, 0.2);
+  }
+  .vypr-inset-ring {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 }
