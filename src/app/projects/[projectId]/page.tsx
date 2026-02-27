@@ -5,7 +5,6 @@ import { ResultsPageClient } from "@/components/results/ResultsPageClient";
 import { createServerClient } from "@/lib/supabase/server";
 import { getDemoData } from "@/lib/seed-demo-data";
 import type { Project, Question, Response, Answer, AiAnalysis } from "@/types";
-import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ResultsOverview } from "@/components/results/results-overview";
 import { QuestionResults } from "@/components/results/question-results";
