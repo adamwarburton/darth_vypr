@@ -7,12 +7,26 @@ import type {
   QuestionSettings,
 } from "@/types";
 
-// --- Deterministic ID generation ---
-function id(prefix: string, n: number): string {
-  return `${prefix}-${String(n).padStart(4, "0")}-0000-0000-000000000000`;
+// --- Deterministic UUID generation ---
+// Uses a fixed namespace to create valid v4-format UUIDs deterministically
+function uuid(prefix: string, n: number): string {
+  const hex = (v: number, len: number) =>
+    v.toString(16).padStart(len, "0");
+
+  // Map prefix to a stable 4-char hex code
+  const prefixMap: Record<string, string> = {
+    proj: "aa01",
+    q: "bb02",
+    r: "cc03",
+    a: "dd04",
+    resp: "ee05",
+  };
+  const pfx = prefixMap[prefix] || "ff00";
+
+  return `${pfx}${hex(n, 4)}-0000-4000-8000-000000000000`;
 }
 
-const PROJECT_ID = id("proj", 1);
+const PROJECT_ID = uuid("proj", 1);
 
 // --- Demo Project ---
 export const demoProject: Project = {
@@ -78,7 +92,7 @@ const maxDiffItems: ChoiceOption[] = [
 
 export const demoQuestions: Question[] = [
   {
-    id: id("q", 1),
+    id: uuid("q", 1),
     project_id: PROJECT_ID,
     type: "monadic_split",
     title: "Would you buy this drink based on the packaging?",
@@ -95,7 +109,7 @@ export const demoQuestions: Question[] = [
     created_at: "2025-05-28T14:35:00Z",
   },
   {
-    id: id("q", 2),
+    id: uuid("q", 2),
     project_id: PROJECT_ID,
     type: "single_choice",
     title: "Which flavour would you most like to try?",
@@ -108,7 +122,7 @@ export const demoQuestions: Question[] = [
     created_at: "2025-05-28T14:40:00Z",
   },
   {
-    id: id("q", 3),
+    id: uuid("q", 3),
     project_id: PROJECT_ID,
     type: "multiple_choice",
     title: "Which of these words describe your impression of the product range?",
@@ -121,7 +135,7 @@ export const demoQuestions: Question[] = [
     created_at: "2025-05-28T14:45:00Z",
   },
   {
-    id: id("q", 4),
+    id: uuid("q", 4),
     project_id: PROJECT_ID,
     type: "scaled_response",
     title: "How appealing is this product concept overall?",
@@ -146,7 +160,7 @@ export const demoQuestions: Question[] = [
     created_at: "2025-05-28T14:50:00Z",
   },
   {
-    id: id("q", 5),
+    id: uuid("q", 5),
     project_id: PROJECT_ID,
     type: "open_text",
     title: "What is your first reaction to this product?",
@@ -159,7 +173,7 @@ export const demoQuestions: Question[] = [
     created_at: "2025-05-28T14:55:00Z",
   },
   {
-    id: id("q", 6),
+    id: uuid("q", 6),
     project_id: PROJECT_ID,
     type: "ranking",
     title: "Rank these factors by importance when choosing a new drink",
@@ -172,7 +186,7 @@ export const demoQuestions: Question[] = [
     created_at: "2025-05-28T15:00:00Z",
   },
   {
-    id: id("q", 7),
+    id: uuid("q", 7),
     project_id: PROJECT_ID,
     type: "maxdiff",
     title: "Which product claims matter most to you?",
@@ -189,7 +203,7 @@ export const demoQuestions: Question[] = [
     created_at: "2025-05-28T15:05:00Z",
   },
   {
-    id: id("q", 8),
+    id: uuid("q", 8),
     project_id: PROJECT_ID,
     type: "anchored_pricing",
     title: "How much would you pay for this drink?",
@@ -210,7 +224,7 @@ export const demoQuestions: Question[] = [
     created_at: "2025-05-28T15:10:00Z",
   },
   {
-    id: id("q", 9),
+    id: uuid("q", 9),
     project_id: PROJECT_ID,
     type: "implicit_association",
     title: "Quick — does this word fit the product?",
@@ -238,7 +252,7 @@ export const demoQuestions: Question[] = [
     created_at: "2025-05-28T15:15:00Z",
   },
   {
-    id: id("q", 10),
+    id: uuid("q", 10),
     project_id: PROJECT_ID,
     type: "image_heatmap",
     title: "What catches your eye first on this packaging?",
@@ -353,7 +367,7 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
   let answerIndex = 0;
 
   for (let i = 0; i < RESPONDENT_COUNT; i++) {
-    const respondentId = id("resp", i);
+    const respondentId = uuid("resp", i);
     const startTime = new Date(
       Date.parse("2025-06-01T10:00:00Z") + i * 300000 + Math.floor(rand() * 600000)
     );
@@ -363,7 +377,7 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
     const completed = rand() > 0.08; // 92% completion rate
 
     responses.push({
-      id: id("r", i),
+      id: uuid("r", i),
       project_id: PROJECT_ID,
       respondent_id: respondentId,
       started_at: startTime.toISOString(),
@@ -379,9 +393,9 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
       { a: [3, 8, 20, 35, 34], b: [2, 5, 12, 38, 43], c: [5, 10, 25, 35, 25] };
     const rating = pickWeighted([1, 2, 3, 4, 5], monadicWeights[variant]);
     answers.push({
-      id: id("a", answerIndex++),
-      response_id: id("r", i),
-      question_id: id("q", 1),
+      id: uuid("a", answerIndex++),
+      response_id: uuid("r", i),
+      question_id: uuid("q", 1),
       value: { variant, response: rating as 1 | 2 | 3 | 4 | 5 },
       answered_at: new Date(startTime.getTime() + 20000).toISOString(),
     });
@@ -392,9 +406,9 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
       [28, 22, 18, 15, 12, 5]
     );
     answers.push({
-      id: id("a", answerIndex++),
-      response_id: id("r", i),
-      question_id: id("q", 2),
+      id: uuid("a", answerIndex++),
+      response_id: uuid("r", i),
+      question_id: uuid("q", 2),
       value: { selected: scChoice },
       answered_at: new Date(startTime.getTime() + 40000).toISOString(),
     });
@@ -406,9 +420,9 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
       .map((o) => o.id);
     if (selected.length === 0) selected.push("mc_1");
     answers.push({
-      id: id("a", answerIndex++),
-      response_id: id("r", i),
-      question_id: id("q", 3),
+      id: uuid("a", answerIndex++),
+      response_id: uuid("r", i),
+      question_id: uuid("q", 3),
       value: { selected },
       answered_at: new Date(startTime.getTime() + 60000).toISOString(),
     });
@@ -416,9 +430,9 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
     // Q4: Scaled Response (7-point) — Skewed positive (mean ~5.2)
     const scaledRating = pickWeighted([1, 2, 3, 4, 5, 6, 7], [2, 4, 8, 15, 25, 28, 18]);
     answers.push({
-      id: id("a", answerIndex++),
-      response_id: id("r", i),
-      question_id: id("q", 4),
+      id: uuid("a", answerIndex++),
+      response_id: uuid("r", i),
+      question_id: uuid("q", 4),
       value: { rating: scaledRating },
       answered_at: new Date(startTime.getTime() + 80000).toISOString(),
     });
@@ -426,9 +440,9 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
     // Q5: Open Text
     const textResponse = openTextResponses[i % openTextResponses.length];
     answers.push({
-      id: id("a", answerIndex++),
-      response_id: id("r", i),
-      question_id: id("q", 5),
+      id: uuid("a", answerIndex++),
+      response_id: uuid("r", i),
+      question_id: uuid("q", 5),
       value: { text: textResponse },
       answered_at: new Date(startTime.getTime() + 120000).toISOString(),
     });
@@ -436,7 +450,6 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
     // Q6: Ranking — Taste consistently #1, Price #2
     const baseOrder = ["rk_1", "rk_5", "rk_2", "rk_3", "rk_4"];
     const ranked = [...baseOrder];
-    // Add some noise
     if (rand() > 0.6) {
       const swapIdx = Math.floor(rand() * 3) + 1;
       [ranked[swapIdx], ranked[swapIdx + 1]] = [ranked[swapIdx + 1], ranked[swapIdx]];
@@ -445,9 +458,9 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
       [ranked[0], ranked[1]] = [ranked[1], ranked[0]];
     }
     answers.push({
-      id: id("a", answerIndex++),
-      response_id: id("r", i),
-      question_id: id("q", 6),
+      id: uuid("a", answerIndex++),
+      response_id: uuid("r", i),
+      question_id: uuid("q", 6),
       value: { ranked },
       answered_at: new Date(startTime.getTime() + 150000).toISOString(),
     });
@@ -461,7 +474,6 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
       for (let k = 0; k < 4; k++) {
         setItems.push(shuffledItems[(s * 4 + k) % mdItemIds.length]);
       }
-      // Weighted best/worst — items 1,2,3 more likely best; items 8,9,10 more likely worst
       const bestWeights = setItems.map((item) => {
         const idx = mdItemIds.indexOf(item);
         return [10, 9, 7, 6, 5, 4, 3, 3, 2, 1][idx] || 3;
@@ -480,9 +492,9 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
       sets.push({ items: setItems, best, worst });
     }
     answers.push({
-      id: id("a", answerIndex++),
-      response_id: id("r", i),
-      question_id: id("q", 7),
+      id: uuid("a", answerIndex++),
+      response_id: uuid("r", i),
+      question_id: uuid("q", 7),
       value: { sets },
       answered_at: new Date(startTime.getTime() + 200000).toISOString(),
     });
@@ -494,9 +506,9 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
       return { price, wouldBuy: rand() * 100 < buyProb };
     });
     answers.push({
-      id: id("a", answerIndex++),
-      response_id: id("r", i),
-      question_id: id("q", 8),
+      id: uuid("a", answerIndex++),
+      response_id: uuid("r", i),
+      question_id: uuid("q", 8),
       value: { method: "gabor_granger" as const, responses: priceResponses },
       answered_at: new Date(startTime.getTime() + 240000).toISOString(),
     });
@@ -523,9 +535,9 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
       };
     });
     answers.push({
-      id: id("a", answerIndex++),
-      response_id: id("r", i),
-      question_id: id("q", 9),
+      id: uuid("a", answerIndex++),
+      response_id: uuid("r", i),
+      question_id: uuid("q", 9),
       value: { associations },
       answered_at: new Date(startTime.getTime() + 300000).toISOString(),
     });
@@ -542,7 +554,6 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
       "Interesting texture",
       "Brand name area",
     ];
-    // Cluster clicks around 3 hotspots: logo (30,20), fruit image (50,50), flavour text (70,30)
     const hotspots = [
       { x: 30, y: 20, weight: 0.4 },
       { x: 50, y: 50, weight: 0.35 },
@@ -557,9 +568,9 @@ function generateResponses(): { responses: Response[]; answers: Answer[] } {
       };
     });
     answers.push({
-      id: id("a", answerIndex++),
-      response_id: id("r", i),
-      question_id: id("q", 10),
+      id: uuid("a", answerIndex++),
+      response_id: uuid("r", i),
+      question_id: uuid("q", 10),
       value: { clicks },
       answered_at: new Date(startTime.getTime() + 340000).toISOString(),
     });

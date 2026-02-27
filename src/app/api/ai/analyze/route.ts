@@ -252,7 +252,7 @@ Provide a comprehensive project-level analysis covering all questions and their 
         project_id: projectId,
         question_id: questionId ?? null,
         analysis_type: analysisType,
-        content: analysisContent,
+        content: analysisContent as Json,
         response_count_at_generation: responseCount,
         model: AI_MODEL,
       })

@@ -5,9 +5,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useProjects } from "@/hooks/use-projects";
+import { useProjects, type ProjectWithCounts } from "@/hooks/use-projects";
 import { getDemoData } from "@/lib/seed-demo-data";
-import type { Project } from "@/types";
 import { Plus, BarChart3, Clock } from "lucide-react";
 
 function formatRelativeTime(dateStr: string): string {
@@ -44,12 +43,7 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge className="bg-gray-100 text-gray-600">Draft</Badge>;
 }
 
-interface ProjectWithStats extends Project {
-  responseCount?: number;
-  completionRate?: number;
-}
-
-function ProjectCard({ project }: { project: ProjectWithStats }) {
+function ProjectCard({ project }: { project: ProjectWithCounts }) {
   const href =
     project.status === "draft"
       ? `/projects/${project.id}/edit`
@@ -99,9 +93,9 @@ function ProjectCard({ project }: { project: ProjectWithStats }) {
 export default function DashboardPage() {
   const { projects, loading } = useProjects();
 
-  // Include demo project for demo purposes
+  // Build the in-memory demo project as a fallback
   const demo = getDemoData();
-  const demoProject: ProjectWithStats = {
+  const demoFallback: ProjectWithCounts = {
     ...demo.project,
     responseCount: demo.responses.length,
     completionRate: Math.round(
@@ -111,11 +105,12 @@ export default function DashboardPage() {
     ),
   };
 
-  // Always include the demo project; merge with any DB projects, deduplicating by ID
-  const dbProjects: ProjectWithStats[] = projects.filter(
-    (p) => p.id !== demoProject.id
-  );
-  const allProjects: ProjectWithStats[] = [demoProject, ...dbProjects];
+  // If the demo project was loaded from DB (with real counts), use it;
+  // otherwise prepend the in-memory fallback
+  const dbHasDemo = projects.some((p) => p.id === demoFallback.id);
+  const allProjects: ProjectWithCounts[] = dbHasDemo
+    ? projects
+    : [demoFallback, ...projects];
 
   return (
     <div className="min-h-screen bg-background">
