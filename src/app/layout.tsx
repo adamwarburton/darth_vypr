@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Vypr — AI-Native Insights Platform",
+  title: "Darth Vypr — Consumer Intelligence Platform",
   description:
-    "Create surveys, collect responses, and get AI-powered analysis of consumer insights.",
+    "Better decisions, winning products. Rapid, predictive consumer insight that reduces guesswork and increases product success rates.",
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   );
 }
