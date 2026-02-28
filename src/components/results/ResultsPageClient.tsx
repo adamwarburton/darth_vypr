@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ResultsHeader } from "./ResultsHeader";
 import { QuestionResultCard } from "./QuestionResultCard";
 import { AIAnalysisPanel } from "./AIAnalysisPanel";
 import { AISummaryTab } from "./AISummaryTab";
+import { AIGeneratingOverlay } from "./AIGeneratingOverlay";
 import { MonadicSplitResults } from "./question-types/MonadicSplitResults";
 import { SingleChoiceResults } from "./question-types/SingleChoiceResults";
 import { MultipleChoiceResults } from "./question-types/MultipleChoiceResults";
@@ -61,9 +62,137 @@ export function ResultsPageClient({
   const [loadingAnalysis, setLoadingAnalysis] = useState<Record<string, boolean>>({});
   const [activeTab, setActiveTab] = useState("results");
 
+  // AI Panel generation state
+  const isAiPanel = project.distribution_method === "ai_panel";
+  const [aiGenerationStage, setAiGenerationStage] = useState<
+    "idle" | "generating" | "analyzing" | "done" | "error"
+  >("idle");
+  const [generationError, setGenerationError] = useState<string | null>(null);
+
+  // Internal analysis trigger that returns the analysis directly
+  const triggerAnalysisInternal = useCallback(
+    async (questionId?: string): Promise<AiAnalysis | null> => {
+      const key = questionId || "project";
+      setLoadingAnalysis((prev) => ({ ...prev, [key]: true }));
+
+      try {
+        const res = await fetch("/api/ai/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            projectId: project.id,
+            questionId: questionId || undefined,
+            analysisType: questionId ? "question_summary" : "project_summary",
+          }),
+        });
+
+        if (res.ok) {
+          const { analysis } = await res.json();
+          setAnalyses((prev) => [
+            ...prev.filter(
+              (a) =>
+                !(
+                  a.question_id === (questionId || null) &&
+                  a.analysis_type ===
+                    (questionId ? "question_summary" : "project_summary")
+                )
+            ),
+            analysis,
+          ]);
+          return analysis;
+        }
+      } catch (err) {
+        console.error("Analysis failed:", err);
+      } finally {
+        setLoadingAnalysis((prev) => ({ ...prev, [key]: false }));
+      }
+      return null;
+    },
+    [project.id]
+  );
+
+  // AI panel generation flow
+  const runAiPanelGeneration = useCallback(async () => {
+    setAiGenerationStage("generating");
+    setGenerationError(null);
+
+    try {
+      // Step 1: Generate responses via Haiku
+      const genRes = await fetch("/api/ai/generate-responses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: project.id }),
+      });
+
+      if (!genRes.ok) {
+        const err = await genRes.json();
+        throw new Error(err.error || "Failed to generate responses");
+      }
+
+      const genData = await genRes.json();
+
+      // If already generated (idempotent), just reload
+      if (genData.alreadyGenerated) {
+        window.location.reload();
+        return;
+      }
+
+      // Refetch data from Supabase after generation
+      const [respResult, ansResult] = await Promise.all([
+        supabase
+          .from("responses")
+          .select("*")
+          .eq("project_id", project.id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("answers")
+          .select("*, responses!inner(project_id)")
+          .eq("responses.project_id", project.id),
+      ]);
+
+      const newResponses = (respResult.data as unknown as Response[]) || [];
+      const newAnswers = (ansResult.data as unknown as Answer[]) || [];
+
+      setResponses(newResponses);
+      setAnswers(newAnswers);
+
+      // Step 2: Run AI analyses in parallel
+      setAiGenerationStage("analyzing");
+
+      const analysisPromises = [
+        triggerAnalysisInternal(),
+        ...questions.map((q) => triggerAnalysisInternal(q.id)),
+      ];
+
+      await Promise.allSettled(analysisPromises);
+
+      setAiGenerationStage("done");
+    } catch (err) {
+      console.error("AI panel generation failed:", err);
+      setGenerationError(
+        err instanceof Error ? err.message : "Generation failed"
+      );
+      setAiGenerationStage("error");
+    }
+  }, [project.id, questions, triggerAnalysisInternal]);
+
+  // Detect AI panel project needing generation
+  useEffect(() => {
+    if (
+      isAiPanel &&
+      initialResponses.length === 0 &&
+      aiGenerationStage === "idle"
+    ) {
+      runAiPanelGeneration();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Real-time subscriptions for live projects
   useEffect(() => {
     if (project.status !== "live") return;
+    if (aiGenerationStage === "generating" || aiGenerationStage === "analyzing")
+      return;
 
     const channel = supabase
       .channel(`project-${project.id}-results`)
@@ -89,7 +218,6 @@ export function ResultsPageClient({
         },
         (payload) => {
           const newAnswer = payload.new as unknown as Answer;
-          // Verify this answer belongs to our project by checking if response_id is in our responses
           setAnswers((prev) => [...prev, newAnswer]);
         }
       )
@@ -98,7 +226,7 @@ export function ResultsPageClient({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [project.id, project.status]);
+  }, [project.id, project.status, aiGenerationStage]);
 
   // Get cached analysis for a question
   const getQuestionAnalysis = useCallback(
@@ -141,58 +269,14 @@ export function ResultsPageClient({
     [analyses, responses.length]
   );
 
-  // Trigger analysis for a question or project
-  const triggerAnalysis = useCallback(
-    async (questionId?: string) => {
-      const key = questionId || "project";
-      setLoadingAnalysis((prev) => ({ ...prev, [key]: true }));
-
-      try {
-        const res = await fetch("/api/ai/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            projectId: project.id,
-            questionId: questionId || undefined,
-            analysisType: questionId
-              ? "question_summary"
-              : "project_summary",
-          }),
-        });
-
-        if (res.ok) {
-          const { analysis } = await res.json();
-          setAnalyses((prev) => [
-            ...prev.filter(
-              (a) =>
-                !(
-                  a.question_id === (questionId || null) &&
-                  a.analysis_type ===
-                    (questionId ? "question_summary" : "project_summary")
-                )
-            ),
-            analysis,
-          ]);
-        }
-      } catch (err) {
-        console.error("Analysis failed:", err);
-      } finally {
-        setLoadingAnalysis((prev) => ({ ...prev, [key]: false }));
-      }
-    },
-    [project.id]
-  );
-
   // Re-run all analyses
   const rerunAllAnalyses = useCallback(async () => {
-    // Trigger project-level analysis
-    triggerAnalysis();
-
-    // Trigger per-question analyses
-    for (const q of questions) {
-      await triggerAnalysis(q.id);
-    }
-  }, [questions, triggerAnalysis]);
+    const promises = [
+      triggerAnalysisInternal(),
+      ...questions.map((q) => triggerAnalysisInternal(q.id)),
+    ];
+    await Promise.allSettled(promises);
+  }, [questions, triggerAnalysisInternal]);
 
   // Close project handler
   const handleCloseProject = useCallback(async () => {
@@ -291,6 +375,44 @@ export function ResultsPageClient({
     [getQuestionAnswers, getQuestionAnalysis]
   );
 
+  // Show overlay while AI panel is generating
+  if (
+    aiGenerationStage === "generating" ||
+    aiGenerationStage === "analyzing"
+  ) {
+    return (
+      <AIGeneratingOverlay
+        stage={aiGenerationStage === "generating" ? "generating" : "analyzing"}
+      />
+    );
+  }
+
+  // Show error state
+  if (aiGenerationStage === "error") {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 border border-red-500/20">
+            <span className="text-2xl text-red-400">!</span>
+          </div>
+          <h2 className="text-lg font-semibold text-foreground">
+            Generation Failed
+          </h2>
+          <p className="max-w-md text-sm text-muted-foreground">
+            {generationError ||
+              "Something went wrong while generating AI panel responses."}
+          </p>
+          <button
+            onClick={runAiPanelGeneration}
+            className="mt-2 rounded-lg bg-vypr-teal px-4 py-2 text-sm font-semibold text-vypr-navy hover:bg-vypr-teal/90"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <ResultsHeader
@@ -300,6 +422,25 @@ export function ResultsPageClient({
         onCloseProject={handleCloseProject}
         isAnalyzing={Object.values(loadingAnalysis).some(Boolean)}
       />
+
+      {/* AI Panel disclaimer banner */}
+      {isAiPanel && responses.length > 0 && (
+        <div className="flex items-start gap-3 rounded-lg border border-indigo-500/20 bg-indigo-500/[0.06] px-4 py-3">
+          <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-400 text-xs font-bold">
+            i
+          </div>
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium text-indigo-400">
+              AI-Generated Responses
+            </span>
+            {" — "}
+            These results were generated by an AI model simulating 500 nationally
+            representative UK respondents. They represent estimated consumer
+            attitudes and should be validated with real panel data before making
+            business decisions.
+          </div>
+        </div>
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList variant="line">
@@ -318,6 +459,7 @@ export function ResultsPageClient({
                   questionType={question.type}
                   questionTitle={question.title}
                   responseCount={getQuestionAnswers(question.id).length}
+                  isAiPanel={isAiPanel}
                 >
                   {renderVisualization(question)}
 
@@ -325,7 +467,7 @@ export function ResultsPageClient({
                     analysis={getQuestionAnalysis(question.id)}
                     isLoading={loadingAnalysis[question.id] || false}
                     staleCount={getStaleCount(question.id)}
-                    onRefresh={() => triggerAnalysis(question.id)}
+                    onRefresh={() => triggerAnalysisInternal(question.id)}
                   />
                 </QuestionResultCard>
               ))}
@@ -337,7 +479,7 @@ export function ResultsPageClient({
             analysis={getProjectAnalysis()}
             isLoading={loadingAnalysis["project"] || false}
             staleCount={getStaleCount()}
-            onRefresh={() => triggerAnalysis()}
+            onRefresh={() => triggerAnalysisInternal()}
           />
         </TabsContent>
       </Tabs>

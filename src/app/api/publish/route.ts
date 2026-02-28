@@ -3,7 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import type { ApiError } from "@/types";
 
 export async function POST(request: NextRequest) {
-  const { projectId } = await request.json();
+  const { projectId, distributionMethod } = await request.json();
 
   if (!projectId) {
     return NextResponse.json(
@@ -52,12 +52,17 @@ export async function POST(request: NextRequest) {
   }
 
   // Publish the project
+  const updatePayload: Record<string, unknown> = {
+    status: "live",
+    published_at: new Date().toISOString(),
+  };
+  if (distributionMethod) {
+    updatePayload.distribution_method = distributionMethod;
+  }
+
   const { data: updatedProject, error: updateError } = await supabase
     .from("projects")
-    .update({
-      status: "live",
-      published_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq("id", projectId)
     .select()
     .single();

@@ -14,6 +14,7 @@ import {
   PoundSterling,
   Zap,
   MousePointerClick,
+  Bot,
 } from "lucide-react";
 import type { QuestionType } from "@/types";
 
@@ -35,6 +36,7 @@ interface QuestionResultCardProps {
   questionType: QuestionType;
   questionTitle: string;
   responseCount: number;
+  isAiPanel?: boolean;
   children: React.ReactNode;
 }
 
@@ -43,6 +45,7 @@ export function QuestionResultCard({
   questionType,
   questionTitle,
   responseCount,
+  isAiPanel,
   children,
 }: QuestionResultCardProps) {
   const Icon = ICONS[questionType] || CircleDot;
@@ -66,7 +69,15 @@ export function QuestionResultCard({
               </p>
             </div>
           </div>
-          <Badge variant="secondary">{responseCount} responses</Badge>
+          <div className="flex items-center gap-2">
+            {isAiPanel && (
+              <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 gap-1 text-[10px]">
+                <Bot className="h-3 w-3" />
+                AI Generated
+              </Badge>
+            )}
+            <Badge variant="secondary">{responseCount} responses</Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-6 space-y-6">{children}</CardContent>

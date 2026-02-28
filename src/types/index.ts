@@ -7,6 +7,8 @@
 
 export type ProjectStatus = "draft" | "live" | "closed";
 
+export type DistributionMethod = "url" | "vypr_panel" | "ai_panel";
+
 export type QuestionType =
   | "monadic_split"
   | "single_choice"
@@ -142,6 +144,7 @@ export interface Project {
   description: string | null;
   category?: string;
   status: ProjectStatus;
+  distribution_method?: DistributionMethod;
   published_at: string | null;
   closed_at: string | null;
   created_at: string;
