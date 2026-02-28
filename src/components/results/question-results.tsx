@@ -151,7 +151,7 @@ export function QuestionResults() {
         </div>
 
         <div className="h-[280px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <BarChart
               data={barData}
               layout="vertical"
@@ -259,7 +259,7 @@ export function QuestionResults() {
         </div>
 
         <div className="h-[200px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <AreaChart
               data={ratingData}
               margin={{ top: 10, right: 10, bottom: 0, left: 0 }}
@@ -404,7 +404,7 @@ export function QuestionResults() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <RadarChart data={radarData} cx="50%" cy="50%">
                 <PolarGrid stroke="rgba(255,255,255,0.06)" />
                 <PolarAngleAxis
@@ -427,7 +427,7 @@ export function QuestionResults() {
               Ranked Results
             </p>
             <div className="space-y-2">
-              {radarData
+              {[...radarData]
                 .sort((a, b) => b.value - a.value)
                 .map((item, i) => (
                   <div
@@ -483,7 +483,7 @@ export function QuestionResults() {
         </div>
 
         <div className="h-[200px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <AreaChart
               data={trendData}
               margin={{ top: 10, right: 10, bottom: 0, left: 0 }}
