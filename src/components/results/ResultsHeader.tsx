@@ -9,6 +9,7 @@ import {
   RefreshCw,
   XCircle,
   Download,
+  Bot,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -94,6 +95,12 @@ export function ResultsHeader({
                   ? "Closed"
                   : "Draft"}
             </Badge>
+            {project.distribution_method === "ai_panel" && (
+              <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 gap-1">
+                <Bot className="h-3 w-3" />
+                AI Panel
+              </Badge>
+            )}
             {project.category && (
               <Badge variant="outline">{project.category}</Badge>
             )}

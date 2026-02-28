@@ -30,7 +30,14 @@ interface PanelDistributionDialogProps {
   projectTitle: string;
 }
 
-type DistributionMethod = "url" | "vypr-panel" | "ai-panel" | null;
+type DistributionMethodUI = "url" | "vypr-panel" | "ai-panel" | null;
+
+// Map UI values to API values
+const distributionMethodMap: Record<string, string> = {
+  "url": "url",
+  "vypr-panel": "vypr_panel",
+  "ai-panel": "ai_panel",
+};
 
 export function PanelDistributionDialog({
   open,
@@ -39,7 +46,7 @@ export function PanelDistributionDialog({
   projectTitle,
 }: PanelDistributionDialogProps) {
   const router = useRouter();
-  const [selected, setSelected] = useState<DistributionMethod>(null);
+  const [selected, setSelected] = useState<DistributionMethodUI>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [published, setPublished] = useState(false);
   const [surveyUrl, setSurveyUrl] = useState("");
@@ -53,7 +60,10 @@ export function PanelDistributionDialog({
       const res = await fetch("/api/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId }),
+        body: JSON.stringify({
+          projectId,
+          distributionMethod: distributionMethodMap[selected],
+        }),
       });
 
       if (!res.ok) {
@@ -65,6 +75,14 @@ export function PanelDistributionDialog({
 
       const data = await res.json();
       setSurveyUrl(data.surveyUrl || `${window.location.origin}/survey/${projectId}`);
+
+      // For AI panel, navigate directly to results page where generation begins
+      if (selected === "ai-panel") {
+        onOpenChange(false);
+        router.push(`/projects/${projectId}`);
+        return;
+      }
+
       setPublished(true);
     } catch (err) {
       console.error("Publish error:", err);
