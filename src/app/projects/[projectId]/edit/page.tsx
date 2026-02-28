@@ -9,6 +9,7 @@ import { ResizablePanel } from "@/components/survey-builder/resizable-panel";
 import { QuestionList } from "@/components/survey-builder/question-list";
 import { QuestionEditor } from "@/components/survey-builder/question-editor";
 import type { SurveyQuestion } from "@/components/survey-builder/question-list";
+import { getDemoProjectData } from "@/lib/demo-project-questions";
 import {
   ArrowLeft,
   Save,
@@ -23,45 +24,13 @@ interface EditProjectPageProps {
   params: Promise<{ projectId: string }>;
 }
 
-const DEMO_QUESTIONS: SurveyQuestion[] = [
-  {
-    id: "q1",
-    type: "multiple_choice",
-    title: "Which of these snack bar flavours would you be most likely to purchase?",
-    required: true,
-  },
-  {
-    id: "q2",
-    type: "rating_scale",
-    title: "How appealing is the concept of a high-protein snack bar with plant-based ingredients?",
-    required: true,
-  },
-  {
-    id: "q3",
-    type: "image_stimulus",
-    title: "Looking at the packaging design below, what are your first impressions?",
-    required: true,
-  },
-  {
-    id: "q4",
-    type: "free_text",
-    title: "What would make you choose this product over your current go-to snack?",
-    required: false,
-  },
-  {
-    id: "q5",
-    type: "ranking",
-    title: "Rank the following product attributes in order of importance to you.",
-    required: true,
-  },
-];
-
 export default function EditProjectPage({ params }: EditProjectPageProps) {
   const { projectId } = use(params);
-  const [questions, setQuestions] = useState<SurveyQuestion[]>(DEMO_QUESTIONS);
-  const [selectedId, setSelectedId] = useState<string | null>("q1");
+  const demoData = getDemoProjectData(projectId);
+  const [questions, setQuestions] = useState<SurveyQuestion[]>(demoData?.questions ?? []);
+  const [selectedId, setSelectedId] = useState<string | null>(demoData?.questions[0]?.id ?? null);
   const [showTypeSelector, setShowTypeSelector] = useState(false);
-  const [projectTitle, setProjectTitle] = useState("Snack Bar Flavour Preferences UK 2025");
+  const [projectTitle, setProjectTitle] = useState(demoData?.title ?? "Untitled Project");
 
   const selectedQuestion = questions.find((q) => q.id === selectedId) || null;
 
