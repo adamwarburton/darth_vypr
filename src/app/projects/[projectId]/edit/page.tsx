@@ -10,6 +10,7 @@ import { QuestionList } from "@/components/survey-builder/question-list";
 import { QuestionEditor } from "@/components/survey-builder/question-editor";
 import type { SurveyQuestion } from "@/components/survey-builder/question-list";
 import { getDemoProjectData } from "@/lib/demo-project-questions";
+import { PanelDistributionDialog } from "@/components/survey-builder/panel-distribution-dialog";
 import {
   ArrowLeft,
   Save,
@@ -31,6 +32,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
   const [selectedId, setSelectedId] = useState<string | null>(demoData?.questions[0]?.id ?? null);
   const [showTypeSelector, setShowTypeSelector] = useState(false);
   const [projectTitle, setProjectTitle] = useState(demoData?.title ?? "Untitled Project");
+  const [showDistribute, setShowDistribute] = useState(false);
 
   const selectedQuestion = questions.find((q) => q.id === selectedId) || null;
 
@@ -128,12 +130,20 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
           <Button
             size="sm"
             className="gap-1.5 bg-vypr-teal font-semibold text-vypr-navy hover:bg-vypr-teal/90 text-xs shadow-[0_0_12px_rgba(0,214,198,0.2)]"
+            onClick={() => setShowDistribute(true)}
           >
             <Send className="size-3.5" />
             Publish
           </Button>
         </div>
       </header>
+
+      <PanelDistributionDialog
+        open={showDistribute}
+        onOpenChange={setShowDistribute}
+        projectId={projectId}
+        projectTitle={projectTitle}
+      />
 
       <div className="flex-1 overflow-hidden">
         <ResizablePanel
