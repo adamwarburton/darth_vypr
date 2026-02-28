@@ -309,7 +309,7 @@ export function ResultsPageClient({
 
         <TabsContent value="results" className="mt-6">
           <div className="space-y-6">
-            {questions
+            {[...questions]
               .sort((a, b) => a.order_index - b.order_index)
               .map((question) => (
                 <QuestionResultCard
